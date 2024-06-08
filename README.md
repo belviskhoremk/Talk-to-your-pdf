@@ -1,22 +1,27 @@
-Talk to your pdf
+# Talking to Your PDF
 
-In this project, I used Llama3, HuggingFaceHub and Langchain to make you talk with you pdf.
-All wht you have to do is to upload a pdf file and you can start asking question to the chatbot.
+This project utilizes Llama3, HuggingFaceHub, and Langchain to enable communication with your PDF files. Simply upload a PDF file and you can begin asking questions to the chatbot.
 
-Working:
-	When the pdf is uploaded, we load it using PyPDFLoaded(). After that we split the pages using RecursiveCharacterTextSplitter() . The splits are then stored in a Chroma vector database usinng a custom embedding class.
-	We then create the ConversationalRetrievalChain() that is used to retrieve the necessary information in the vector database and pass it to the llm to generate a proper text.
+## How It Works
 
-Install it locally:
-    • Clone the repo
-    • Create a virtual environment
-        ◦ python3 -m venv venv
-        ◦ source venv/bin/activate
-    • Install the project dependencies
-        ◦ pip install -r requirements.txt
-    • Run the application
-        ◦ flask run
+1. **PDF Processing:** Upon uploading a PDF, we use PyPDFLoaded() to load it. The pages are then split using RecursiveCharacterTextSplitter(), with the splits stored in a Chroma vector database via a custom embedding class.
+   
+2. **Conversation Handling:** We create a ConversationalRetrievalChain() to retrieve necessary information from the vector database. This information is then passed to the language model (LLM) to generate a suitable response.
 
+## Installation (Local)
 
-Note: You need a Hugging Face token before running this application. 
-If you do not have one, you can generate one for free on ‘https://huggingface.co/settings/tokens’, then paste the key in the code on line 21
+To run this application locally, follow these steps:
+
+- Clone the repository.
+- Create a virtual environment:
+  - `python3 -m venv venv`
+  - `source venv/bin/activate`
+- Install the project dependencies:
+  - `pip install -r requirements.txt`
+- Obtain and Configure Hugging Face Token:
+  - Generate a free token at [Hugging Face Tokens](https://huggingface.co/settings/tokens).
+  - Paste the token key into the code at line 21.
+  
+## Note
+
+Ensure you have a valid Hugging Face token before running this application.
