@@ -18,7 +18,7 @@ app.config['SECRET_KEY'] = 'your_secret_key'  # Needed for session management
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-hugging_face_api_key = "REDACTED_HF_TOKEN"
+hugging_face_api_key = ""
 
 
 class SentenceTransformersEmbeddings:
