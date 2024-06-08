@@ -1,4 +1,4 @@
-# Talking to Your PDF
+# Talk to Your PDF
 
 This project utilizes Llama3, HuggingFaceHub, and Langchain to enable communication with your PDF files. Simply upload a PDF file and you can begin asking questions to the chatbot.
 
