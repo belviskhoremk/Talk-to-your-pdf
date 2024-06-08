@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f4f4f9;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    #chat-container {
+      width: 80%;
+      max-width: 600px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+      max-height: 400px;
+      margin-bottom: 20px;
+    }
+    #chat-container p {
+      margin: 5px 0;
+    }
+    .chat-input-container {
+      width: 80%;
+      max-width: 500px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      bottom: 10px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+    }
+    input[type="text"] {
+      width: calc(100% - 70px);
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    button {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #answer {
+      margin-top: 20px;
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+  <script>
+    async function askQuestion() {
+      const question = document.getElementById('question').value;
+      const response = await fetch('/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ question: question })
+      });
+      const data = await response.json();
+      const chatHistory = document.getElementById('chat-container');
+      chatHistory.innerHTML += `<p><strong>You:</strong> ${question}</p>`;
+      chatHistory.innerHTML += `<p><strong>Bot:</strong> ${data.answer}</p>`;
+      chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to the bottom
+      document.getElementById('question').value = ''; // Clear the input field
+
+      const answerContainer = document.getElementById('answer');
+      answerContainer.innerText = data.answer;
+      {#answerContainer.hidden = false;#}
+    }
+  </script>
+</head>
+<body>
+  <h1>Chatbot</h1>
+  <div id="chat-container"></div>
+  <div class="chat-input-container">
+    <input type="text" id="question" placeholder="Type your question here" />
+    <button type="button" onclick="askQuestion()">Ask</button>
+  </div>
+  <div id="answer" hidden></div>
+</body>
+</html>
