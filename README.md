@@ -21,6 +21,8 @@ To run this application locally, follow these steps:
 - Obtain and Configure Hugging Face Token:
   - Generate a free token at [Hugging Face Tokens](https://huggingface.co/settings/tokens).
   - Paste the token key into the code at line 21.
+- Run the app:
+  - `flask run`
   
 ## Note
 
