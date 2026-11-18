@@ -1,77 +1,100 @@
 # 🧾 Talk to Your PDF
 
-Talk to Your PDF is a lightweight AI-powered application that allows you to **ask questions and have conversations with the content of any PDF file**. It uses cutting-edge tools like **LLaMA 3**, **LangChain**, and **Hugging Face Hub** to extract insights and provide contextual answers from your documents.
+Upload any PDF and **ask questions about it in plain language**. The app finds
+the passages relevant to your question and has an LLM (Meta **Llama 3 8B
+Instruct**, via the Hugging Face Inference API) answer from them. It also
+remembers the conversation, so follow-up questions work.
 
----
+Built with **Flask**, **LangChain**, **Sentence-Transformers** and **Chroma**.
 
-## 🚀 Features
+## How it works
 
-- 🧠 Powered by Meta’s **LLaMA 3** via Hugging Face Hub
-- 📄 Upload any PDF file and interact with it using natural language
-- 🔎 Context-aware question-answering using **vector-based semantic search**
-- 🗂️ Document chunking & storage using **Chroma** and **LangChain’s text splitters**
+This is a classic **Retrieval-Augmented Generation (RAG)** pipeline:
 
----
+```
+            upload                                          ask
+PDF ──► PyPDFLoader ──► text splitter ──► embeddings ──► Chroma DB
+                         (1500 chars,     (all-MiniLM-L6-v2)   │
+                          150 overlap)                         ▼
+question + chat history ──► standalone question ──► top-k similar chunks
+                                                              │
+                                    Llama 3 ◄── prompt with chunks as context
+                                       │
+                                     answer
+```
 
-## 🛠️ How It Works
+1. **Load**: the PDF is read page by page.
+2. **Split**: pages are cut into overlapping ~1500-character chunks, so each
+   one fits in the prompt and no sentence is lost at a boundary.
+3. **Embed & store**: each chunk becomes a vector and goes into an in-memory
+   Chroma database.
+4. **Retrieve & answer**: a follow-up question is first rewritten into a
+   standalone question using the chat history. The most similar chunks are
+   then retrieved and passed to the LLM as context.
 
-1. **PDF Processing**
-   - The uploaded PDF is loaded using `PyPDFLoader`.
-   - The content is chunked using `RecursiveCharacterTextSplitter` to maintain semantic boundaries.
-   - Embeddings for the chunks are generated using a custom embedding class and stored in a **Chroma** vector database.
+## Project structure
 
-2. **Conversational Retrieval**
-   - A `ConversationalRetrievalChain` is created to retrieve relevant chunks from the vector store.
-   - The chunks are passed as context to the LLM, which generates a coherent response to the user’s query.
+```
+.
+├── app.py            # Flask routes: upload, chat page, /ask JSON API
+├── rag.py            # RAG pipeline: load, split, embed, retrieve, answer
+├── config.py         # Settings read from environment variables / .env
+├── templates/
+│   ├── index.html    # Upload page
+│   └── chatbot.html  # Chat UI
+├── requirements.txt
+└── .env.example      # Template for your local .env
+```
 
----
+## Getting started
 
-## ⚙️ Installation (Local Setup)
-
-Follow these steps to run the app locally:
+**Requirements:** Python 3.10–3.12 and a free
+[Hugging Face access token](https://huggingface.co/settings/tokens). Your
+Hugging Face account must have accepted the
+[Llama 3 license](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct),
+or you can set `LLM_REPO_ID` to another text-generation model.
 
 ```bash
+git clone https://github.com/belviskhoremk/Talk-to-your-pdf.git
+cd Talk-to-your-pdf
 
-# 1. Clone the repository
-git clone https://github.com/yourusername/talk-to-your-pdf.git
-cd talk-to-your-pdf
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
-# 2. Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate  # or use venv\Scripts\activate on Windows
-
-# 3. Install dependencies
+# Optional: CPU-only PyTorch is much smaller to download
+pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 
-```
-
-## 🔐 Hugging Face API Token
-You’ll need a free Hugging Face API token to run this project.
-
-1. Go to: https://huggingface.co/settings/tokens
-
-2. Generate a token and copy it.
-
-3. Paste the token in your code (replace the placeholder at line 21 or use an .env file for better security).
-
-## ▶️ Run the App
-```bash
-
+cp .env.example .env               # then add your token and a secret key
 flask run
-
 ```
-Then, open your browser and navigate to http://127.0.0.1:5000
 
-## 📌 Requirements
+Open <http://127.0.0.1:5000>, upload a PDF and start asking questions.
 
-- Python 3.8+
-- Flask
-- LangChain
-- HuggingFaceHub
-- PyPDFLoader
-- Chroma
-- Any LLaMA 3-compatible model hosted on Hugging Face
+## Configuration
 
-## ⚠️ Notes
-Make sure you have a valid Hugging Face token before starting the app.
+All settings are environment variables (see [`.env.example`](.env.example)):
 
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `HUGGINGFACEHUB_API_TOKEN` | ✅ | – | Hugging Face access token |
+| `FLASK_SECRET_KEY` | ✅ | dev value | Signs the session cookie |
+| `LLM_REPO_ID` | | `meta-llama/Meta-Llama-3-8B-Instruct` | Any HF text-generation model |
+| `EMBEDDING_MODEL` | | `all-MiniLM-L6-v2` | Sentence-Transformers model |
+
+## API
+
+`POST /ask` (after uploading a PDF in the same browser session)
+
+```json
+// request
+{ "question": "What is the main conclusion of the paper?" }
+// response
+{ "answer": "..." }
+```
+
+## Limitations
+
+- Sessions and vector stores are kept **in memory**: they are lost on restart
+  and are not shared between multiple server processes.
+- Scanned PDFs (images only) contain no extractable text; they would need OCR first.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Upload PDF</title>
+  <title>Talk to your PDF</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,7 +43,7 @@
 <body>
   <h1>Upload PDF</h1>
   <form action="/upload" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" />
+    <input type="file" name="file" accept="application/pdf" required />
     <input type="submit" value="Upload PDF" />
   </form>
 </body>
